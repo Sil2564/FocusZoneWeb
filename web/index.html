@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>FocusZone Web</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f5f6fa;
+            color: #2c3e50;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        button {
+            margin: 10px 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            transition: background 0.3s ease, transform 0.1s ease;
+        }
+
+        button:hover { background-color: #2980b9; }
+        button:active { transform: scale(0.97); }
+
+        select, input, textarea {
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 250px;
+        }
+
+        textarea { width: 300px; height: 60px; resize: none; }
+
+        hr { margin: 30px 0; border: none; border-top: 2px solid #ddd; }
+
+        .materia-box {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .materia-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+        }
+
+        .materia-box h3 { margin: 0 0 10px 0; font-size: 18px; }
+        .materia-box ul { margin: 0; padding-left: 20px; }
+        .materia-box li { margin-bottom: 5px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<h1>🧠 FocusZone Web</h1>
+
+<!-- Avvio sessione -->
+<div class="materie-container">
+    <h2>Avvia una nuova sessione</h2>
+
+    <select id="materiaSelect" onchange="checkNuovaMateria()">
+        <option value="">-- Seleziona materia --</option>
+        <option value="__nuova__">➕ Nuova materia...</option>
+    </select>
+
+    <div id="nuovaMateriaForm" style="display:none; margin-top:10px;">
+        <input type="text" id="nuovaMateriaNome" placeholder="Nome materia">
+        <input type="color" id="nuovaMateriaColore" value="#0000ff">
+        <button onclick="aggiungiMateria()">Crea</button>
+    </div>
+
+    <br>
+    <textarea id="noteInput" placeholder="Note per la sessione"></textarea><br>
+    <button onclick="startSession()">Avvia Sessione</button>
+</div>
+
+<hr>
+
+<!-- Sessione in corso -->
+<div id="sessioneCorrente" style="display:none;
+     background:white;
+     padding:20px;
+     border-radius:12px;
+     box-shadow:0 4px 10px rgba(0,0,0,0.08);
+     margin-bottom:20px;">
+
+    <h2>🎯 Sessione in corso</h2>
+
+    <p><strong>Materia:</strong>
+        <span id="statoMateria" style="font-weight:bold; color:#3498db"></span>
+    </p>
+
+    <p><strong>Note:</strong>
+        <span id="statoNote" style="font-style:italic;"></span>
+    </p>
+
+    <p><strong>Minuti trascorsi:</strong>
+        <span id="minutiTrascorsi">0</span>
+    </p>
+
+    <p><strong>Stato:</strong>
+        <span id="statoPresenza" style="color:green; font-weight:bold;">-</span>
+    </p>
+
+    <button onclick="terminaSessione()"
+            style="background-color:#e74c3c; color:white; padding:10px 15px; border:none; border-radius:8px; cursor:pointer;">
+        Termina sessione
+    </button>
+</div>
+
+
+
+<hr>
+
+<!-- Le mie materie -->
+<div>
+    <h2>📚 Le mie materie</h2>
+    <div id="materieList"></div>
+</div>
+
+<script>
+    const BASE_URL = "http://localhost:4567";
+
+    // Carica materie e aggiorna UI
+    async function caricaMaterie() {
+        const res = await fetch(`${BASE_URL}/materie`);
+        const materie = await res.json();
+
+        const select = document.getElementById("materiaSelect");
+        select.innerHTML = `<option value="">-- Seleziona materia --</option>`;
+        materie.forEach(m => {
+            let opt = document.createElement("option");
+            opt.value = m.nome;
+            opt.textContent = m.nome;
+            opt.style.color = m.colore;
+            select.appendChild(opt);
+        });
+        select.innerHTML += `<option value="__nuova__">➕ Nuova materia...</option>`;
+
+        mostraMaterieConSessioni(materie);
+    }
+
+    function checkNuovaMateria() {
+        const sel = document.getElementById("materiaSelect");
+        const form = document.getElementById("nuovaMateriaForm");
+        form.style.display = (sel.value === "__nuova__") ? "block" : "none";
+    }
+
+    async function aggiungiMateria() {
+        const nome = document.getElementById("nuovaMateriaNome").value;
+        const colore = document.getElementById("nuovaMateriaColore").value;
+
+        if (!nome) { alert("Inserisci un nome per la materia"); return; }
+
+        await fetch(`${BASE_URL}/materie`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome, colore })
+        });
+
+        document.getElementById("nuovaMateriaNome").value = "";
+        document.getElementById("nuovaMateriaForm").style.display = "none";
+
+        caricaMaterie();
+    }
+
+
+
+    async function mostraMaterieConSessioni(materie) {
+        const res = await fetch(`${BASE_URL}/report`);
+        const report = await res.json();
+
+        const container = document.getElementById("materieList");
+        container.innerHTML = "";
+
+        materie.forEach(m => {
+            let box = document.createElement("div");
+            box.className = "materia-box";
+            box.style.borderColor = m.colore;
+
+            let titolo = document.createElement("h3");
+            titolo.textContent = m.nome;
+            titolo.style.color = m.colore;
+            box.appendChild(titolo);
+
+            let lista = document.createElement("ul");
+            report.filter(s => s.materia === m.nome).forEach(s => {
+                let li = document.createElement("li");
+                li.textContent = `${s.data} - Note: ${s.note || "Nessuna nota"}`;
+                lista.appendChild(li);
+            });
+
+            if (lista.children.length === 0) lista.innerHTML = "<li><i>Nessuna sessione ancora</i></li>";
+
+            box.appendChild(lista);
+            container.appendChild(box);
+        });
+    }
+
+    window.onload = () => { caricaMaterie(); };
+</script>
+
+<script src="script.js"></script>
+
+
+</body>
+</html>
