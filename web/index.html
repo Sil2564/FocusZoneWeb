@@ -69,12 +69,13 @@
 </head>
 <body>
 
-<h1>🧠 FocusZone Web</h1>
+<center><h1>🧠 FocusZone Web</h1></center>
 
 <!-- Avvio sessione -->
-<div class="materie-container">
-    <h2>Avvia una nuova sessione</h2>
+<center><h2 onclick="toggleForm()" style="cursor:pointer;">Avvia una nuova sessione ⬇️</h2></center>
 
+<center>
+<div id="nuovaSessioneForm" style="display:none; margin-top:10px;">
     <select id="materiaSelect" onchange="checkNuovaMateria()">
         <option value="">-- Seleziona materia --</option>
         <option value="__nuova__">➕ Nuova materia...</option>
@@ -91,9 +92,11 @@
     <button onclick="startSession()">Avvia Sessione</button>
 </div>
 
+</center>
 <hr>
 
 <!-- Sessione in corso -->
+<center>
 <div id="sessioneCorrente" style="display:none;
      background:white;
      padding:20px;
@@ -123,10 +126,11 @@
         Termina sessione
     </button>
 </div>
+</center>
 
 <hr>
 
-<h2>📅 Calendario Sessioni</h2>
+<center><h2>📅 Calendario Sessioni</h2></center><br>
 <div id="calendar"></div>
 
 <hr>

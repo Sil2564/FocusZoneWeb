@@ -25,6 +25,17 @@ function checkNuovaMateria() {
     form.style.display = (sel.value === "__nuova__") ? "block" : "none";
 }
 
+// 🔹 Mostra/nasconde tutto il form "Avvia una nuova sessione"
+function toggleForm() {
+    const form = document.getElementById("nuovaSessioneForm");
+    if (form.style.display === "none") {
+        form.style.display = "block";
+    } else {
+        form.style.display = "none";
+    }
+}
+
+
 // 🔹 Aggiungi nuova materia
 async function aggiungiMateria() {
     const nome = document.getElementById("nuovaMateriaNome").value;
@@ -79,10 +90,26 @@ async function mostraMaterieConSessioni(materie) {
         box.style.margin = "10px 0";
         box.style.borderRadius = "8px";
 
-        let titolo = document.createElement("h4");
-        titolo.textContent = m.nome;
-        titolo.style.color = m.colore;
-        box.appendChild(titolo);
+       let titolo = document.createElement("h4");
+       titolo.textContent = m.nome;      // solo il nome della materia
+       titolo.style.color = m.colore;
+       titolo.style.fontSize = "24px";
+       titolo.style.margin = "0";
+       box.appendChild(titolo);
+
+       // riga separata per il totale
+       let totale = document.createElement("div");
+       const totaleMinuti = report
+           .filter(s => s.materia === m.nome)
+           .reduce((sum, s) => sum + (s.minutiStudio || 0), 0);
+       totale.textContent = `Totale studio: ${formatDurata(totaleMinuti)}`;
+       totale.style.color = m.colore;
+       totale.style.fontSize = "20px";   // più piccolo
+       totale.style.fontWeight = "bold";
+       totale.style.marginTop = "4px";
+       box.appendChild(totale);
+
+
 
         let lista = document.createElement("ul");
         report.filter(s => s.materia === m.nome).forEach(s => {
@@ -220,6 +247,7 @@ async function caricaCalendario() {
                 title: s.materia,
                 start: parseData(s.data),
                 color: selezionaColoreMateria(s.materia),
+                textColor: selezionaColoreMateria(s.materia),
                 extendedProps: {
                     minutiStudio: s.minutiStudio,
                     pauseBrevi: s.pauseBrevi,
