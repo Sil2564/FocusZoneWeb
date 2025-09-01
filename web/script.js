@@ -18,43 +18,6 @@ function selezionaColoreMateria(nome) {
     return "#000000";
 }
 
-// 🔹 Mostra/nascondi form nuova materia
-function checkNuovaMateria() {
-    const sel = document.getElementById("materiaSelect");
-    const form = document.getElementById("nuovaMateriaForm");
-    form.style.display = (sel.value === "__nuova__") ? "block" : "none";
-}
-
-// 🔹 Mostra/nasconde tutto il form "Avvia una nuova sessione"
-function toggleForm() {
-    const form = document.getElementById("nuovaSessioneForm");
-    if (form.style.display === "none") {
-        form.style.display = "block";
-    } else {
-        form.style.display = "none";
-    }
-}
-
-
-// 🔹 Aggiungi nuova materia
-async function aggiungiMateria() {
-    const nome = document.getElementById("nuovaMateriaNome").value;
-    const colore = document.getElementById("nuovaMateriaColore").value;
-
-    if (!nome) { alert("Inserisci un nome per la materia"); return; }
-
-    await fetch(`${BASE_URL}/materie`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, colore })
-    });
-
-    document.getElementById("nuovaMateriaNome").value = "";
-    document.getElementById("nuovaMateriaForm").style.display = "none";
-
-    caricaMaterie();
-}
-
 // 🔹 Carica materie e aggiorna UI
 async function caricaMaterie() {
     const res = await fetch(`${BASE_URL}/materie`);
@@ -69,7 +32,6 @@ async function caricaMaterie() {
         opt.style.color = m.colore;
         select.appendChild(opt);
     });
-    select.innerHTML += `<option value="__nuova__">➕ Nuova materia...</option>`;
 
     mostraMaterieConSessioni(materie);
 }
@@ -90,35 +52,29 @@ async function mostraMaterieConSessioni(materie) {
         box.style.margin = "10px 0";
         box.style.borderRadius = "8px";
 
-       let titolo = document.createElement("h4");
-       titolo.textContent = m.nome;      // solo il nome della materia
-       titolo.style.color = m.colore;
-       titolo.style.fontSize = "24px";
-       titolo.style.margin = "0";
-       box.appendChild(titolo);
+        let titolo = document.createElement("h4");
+        titolo.textContent = m.nome;
+        titolo.style.color = m.colore;
+        titolo.style.fontSize = "24px";
+        titolo.style.margin = "0";
+        box.appendChild(titolo);
 
-       // riga separata per il totale
-       let totale = document.createElement("div");
-       const totaleMinuti = report
-           .filter(s => s.materia === m.nome)
-           .reduce((sum, s) => sum + (s.minutiStudio || 0), 0);
-       totale.textContent = `Totale studio: ${formatDurata(totaleMinuti)}`;
-       totale.style.color = m.colore;
-       totale.style.fontSize = "20px";   // più piccolo
-       totale.style.fontWeight = "bold";
-       totale.style.marginTop = "4px";
-       box.appendChild(totale);
-
-
+        let totale = document.createElement("div");
+        const totaleMinuti = report
+            .filter(s => s.materia === m.nome)
+            .reduce((sum, s) => sum + (s.minutiStudio || 0), 0);
+        totale.textContent = `Totale studio: ${formatDurata(totaleMinuti)}`;
+        totale.style.color = m.colore;
+        totale.style.fontSize = "20px";
+        totale.style.fontWeight = "bold";
+        totale.style.marginTop = "4px";
+        box.appendChild(totale);
 
         let lista = document.createElement("ul");
         report.filter(s => s.materia === m.nome).forEach(s => {
             let li = document.createElement("li");
-
-            // Converti la stringa data in oggetto Date
             const dataObj = new Date(s.data);
             let formattedData = "";
-
             if (!isNaN(dataObj.getTime())) {
                 formattedData = `${String(dataObj.getDate()).padStart(2,'0')}/` +
                                 `${String(dataObj.getMonth()+1).padStart(2,'0')}/` +
@@ -128,28 +84,17 @@ async function mostraMaterieConSessioni(materie) {
             } else {
                 formattedData = s.data;
             }
-
             li.textContent = `${formattedData} - Tempo totale: ${formatDurata(s.minutiStudio || 0)} - Note: ${s.note || "Nessuna nota"} - Pause brevi: ${s.pauseBrevi || 0}`;
             lista.appendChild(li);
         });
-
         if (lista.children.length === 0) lista.innerHTML = "<li><i>Nessuna sessione ancora</i></li>";
-
         box.appendChild(lista);
         container.appendChild(box);
     });
 }
 
-// 🔹 Avvia sessione e polling per aggiornare div sessione in corso
-async function startSession() {
-    const materia = document.getElementById("materiaSelect").value;
-    const note = document.getElementById("noteInput").value || "";
-
-    if (!materia || materia === "__nuova__") {
-        alert("Seleziona o crea una materia!");
-        return;
-    }
-
+// 🔹 Start session tramite API
+async function startSessionAPI(materia, note) {
     await fetch(`${BASE_URL}/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -177,7 +122,6 @@ async function startSession() {
         try {
             const res = await fetch(`${BASE_URL}/sessione/corrente`);
             const dati = await res.json();
-
             if (dati.attiva) {
                 document.getElementById("minutiTrascorsi").textContent = formatDurata(dati.minutiTrascorsi || 0);
                 document.getElementById("statoPresenza").textContent = dati.stato || "PRESENTE";
@@ -186,7 +130,7 @@ async function startSession() {
                 divSessione.style.display = "none";
                 document.getElementById("statoPresenza").textContent = "Terminata";
                 caricaMaterie();
-                caricaCalendario(); // aggiorna calendario quando sessione termina
+                caricaCalendario();
             }
         } catch (err) {
             console.error("Errore nel polling sessione:", err);
@@ -194,7 +138,72 @@ async function startSession() {
     }, 1000);
 }
 
-// 🔹 Termina sessione manualmente
+// 🔹 SweetAlert: Nuova sessione
+async function apriSweetAlertSessione() {
+    const res = await fetch(`${BASE_URL}/materie`);
+    const materie = await res.json();
+
+    const { value: dati } = await Swal.fire({
+        title: 'Nuova sessione',
+        html: `
+            <select id="swalMateriaSelect" class="swal2-select">
+                <option value="">-- Seleziona materia --</option>
+                ${materie.map(m => `<option value="${m.nome}">${m.nome}</option>`).join('')}
+            </select>
+            <textarea id="swalNoteInput" class="swal2-textarea" placeholder="Note per la sessione"></textarea>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Inizia sessione',
+        preConfirm: () => {
+            const materia = document.getElementById('swalMateriaSelect').value;
+            const note = document.getElementById('swalNoteInput').value;
+            if (!materia) Swal.showValidationMessage("Seleziona una materia!");
+            return { materia, note };
+        }
+    });
+
+    if (dati) {
+        startSessionAPI(dati.materia, dati.note);
+    }
+}
+
+// 🔹 SweetAlert: Nuova materia
+async function apriSweetAlertNuovaMateria() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Nuova materia',
+        html:
+            '<input id="swalMateriaNome" class="swal2-input" placeholder="Nome materia">' +
+            '<input type="color" id="swalMateriaColore" class="swal2-input" value="#3498db">',
+        focusConfirm: false,
+        showCancelButton: true,
+        preConfirm: () => {
+            const nome = document.getElementById('swalMateriaNome').value;
+            const colore = document.getElementById('swalMateriaColore').value;
+            if (!nome) Swal.showValidationMessage("Inserisci un nome!");
+            return { nome, colore };
+        }
+    });
+
+    if (formValues) {
+        await fetch(`${BASE_URL}/materie`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome: formValues.nome, colore: formValues.colore })
+        });
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Materia aggiunta!',
+            timer: 1200,
+            showConfirmButton: false
+        });
+
+        caricaMaterie();
+    }
+}
+
+// 🔹 Termina sessione
 async function terminaSessione() {
     Swal.fire({
         title: 'Confermi di voler terminare la sessione?',
@@ -214,15 +223,16 @@ async function terminaSessione() {
         }
     });
 }
-  function parseData(str) {
-        // "01/09/2025, 14:30"
-        const [dataPart, oraPart] = str.split(", ");
-        const [giorno, mese, anno] = dataPart.split("/");
-        const [ore, minuti] = oraPart.split(":");
-        return new Date(anno, mese-1, giorno, ore, minuti);
-    }
 
-// 🔹 Inizializza e popola il calendario con le sessioni
+// 🔹 Parsing data string
+function parseData(str) {
+    const [dataPart, oraPart] = str.split(", ");
+    const [giorno, mese, anno] = dataPart.split("/");
+    const [ore, minuti] = oraPart.split(":");
+    return new Date(anno, mese-1, giorno, ore, minuti);
+}
+
+// 🔹 Carica calendario
 async function caricaCalendario() {
     const res = await fetch(`${BASE_URL}/report`);
     const report = await res.json();
@@ -232,31 +242,18 @@ async function caricaCalendario() {
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: ''
-        },
-        events: report.map(s => {
-            let [dataPart, oraPart] = s.data.split(", "); // ["01/09/2025", "14:30"]
-            let [giorno, mese, anno] = dataPart.split("/");
-            let [ore, minuti] = oraPart.split(":");
-            let startDate = new Date(anno, mese-1, giorno, ore, minuti); // JS mesi da 0
-
-            return {
-                title: s.materia,
-                start: parseData(s.data),
-                color: selezionaColoreMateria(s.materia),
-                textColor: selezionaColoreMateria(s.materia),
-                extendedProps: {
-                    minutiStudio: s.minutiStudio,
-                    pauseBrevi: s.pauseBrevi,
-                    note: s.note
-                }
-            };
-        }),
-
-
+        headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+        events: report.map(s => ({
+            title: s.materia,
+            start: parseData(s.data),
+            color: selezionaColoreMateria(s.materia),
+            textColor: selezionaColoreMateria(s.materia),
+            extendedProps: {
+                minutiStudio: s.minutiStudio,
+                pauseBrevi: s.pauseBrevi,
+                note: s.note
+            }
+        })),
         eventClick: function(info) {
             const props = info.event.extendedProps;
             Swal.fire({
@@ -276,10 +273,15 @@ async function caricaCalendario() {
 }
 
 // 🔹 Inizializza tutto al load
-// 🔹 Inizializza tutto al load
 document.addEventListener('DOMContentLoaded', () => {
     caricaMaterie();
-
     caricaCalendario();
-});
 
+    // Bottone Nuova materia
+    const btnNuovaMateria = document.getElementById("btnNuovaMateria");
+    if (btnNuovaMateria) btnNuovaMateria.addEventListener("click", apriSweetAlertNuovaMateria);
+
+    // H2 Avvia sessione
+    const h2Sessione = document.getElementById("avviaSessione");
+    if (h2Sessione) h2Sessione.addEventListener("click", apriSweetAlertSessione);
+});

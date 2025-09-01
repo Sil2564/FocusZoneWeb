@@ -65,6 +65,11 @@
             max-width: 900px;
             margin: 0 auto;
         }
+
+        #avviaSessione:hover {
+          background-color: #8A2BE2;
+          transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -72,7 +77,19 @@
 <center><h1>🧠 FocusZone Web</h1></center>
 
 <!-- Avvio sessione -->
-<center><h2 onclick="toggleForm()" style="cursor:pointer;">Avvia una nuova sessione ⬇️</h2></center>
+<center>
+    <h2 id="avviaSessione"
+        style="cursor:pointer;
+             display: inline-block;
+             background-color: #3085d6;
+             padding: 8px 16px;
+             border-radius: 8px;
+             color: white;
+             font-family: 'Trebuchet MS', Helvetica, sans-serif;
+             transition: transform 0.2s;">
+        Avvia una nuova sessione
+    </h2>
+</center>
 
 <center>
 <div id="nuovaSessioneForm" style="display:none; margin-top:10px;">
@@ -80,12 +97,6 @@
         <option value="">-- Seleziona materia --</option>
         <option value="__nuova__">➕ Nuova materia...</option>
     </select>
-
-    <div id="nuovaMateriaForm" style="display:none; margin-top:10px;">
-        <input type="text" id="nuovaMateriaNome" placeholder="Nome materia">
-        <input type="color" id="nuovaMateriaColore" value="#0000ff">
-        <button onclick="aggiungiMateria()">Crea</button>
-    </div>
 
     <br>
     <textarea id="noteInput" placeholder="Note per la sessione"></textarea><br>
@@ -122,7 +133,7 @@
         <span id="statoPresenza" style="color:green; font-weight:bold;">-</span>
     </p>
 
-    <button onclick="terminaSessione()" style="background-color:#e74c3c;">
+    <button onclick="terminaSessione()" style="background-color:#3085d6; color: white;">
         Termina sessione
     </button>
 </div>
@@ -135,11 +146,13 @@
 
 <hr>
 
-<!-- Le mie materie -->
 <div>
     <h2>📚 Le mie materie</h2>
+    <button id="btnNuovaMateria" style="margin-top:10px; ba ">➕ Nuova materia</button>
     <div id="materieList"></div>
 </div>
+
+
 
 <!-- Il tuo script.js -->
 <script src="script.js"></script>
