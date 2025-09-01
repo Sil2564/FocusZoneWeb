@@ -3,19 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>🧠 FocusZone Web</title>
-
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- FullCalendar CSS & JS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-
     <style>
+        header#mainHeader {
+            width: 100%;
+            height: 160px;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Trebuchet MS', Helvetica, sans-serif;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px;
+            font-family: 'Trebuchet MS', Helvetica, sans-serif;
+            margin: 0px;
             background-color: #f5f6fa;
             color: #2c3e50;
         }
@@ -72,9 +80,13 @@
         }
     </style>
 </head>
-<body>
 
-<center><h1>🧠 FocusZone Web</h1></center>
+<header id="mainHeader">
+    <h1>🧠 FocusZone Web</h1>
+</header>
+<br>
+
+<body>
 
 <!-- Avvio sessione -->
 <center>
@@ -102,7 +114,6 @@
     <textarea id="noteInput" placeholder="Note per la sessione"></textarea><br>
     <button onclick="startSession()">Avvia Sessione</button>
 </div>
-
 </center>
 <hr>
 
@@ -120,19 +131,15 @@
     <p><strong>Materia:</strong>
         <span id="statoMateria" style="font-weight:bold; color:#3498db"></span>
     </p>
-
     <p><strong>Note:</strong>
         <span id="statoNote" style="font-style:italic;"></span>
     </p>
-
     <p><strong>Minuti trascorsi:</strong>
         <span id="minutiTrascorsi">0</span>
     </p>
-
     <p><strong>Stato:</strong>
         <span id="statoPresenza" style="color:green; font-weight:bold;">-</span>
     </p>
-
     <button onclick="terminaSessione()" style="background-color:#3085d6; color: white;">
         Termina sessione
     </button>
@@ -141,20 +148,17 @@
 
 <hr>
 
-<center><h2>📅 Calendario Sessioni</h2></center><br>
+<center><h1>📅 Calendario Sessioni</h1></center><br>
 <div id="calendar"></div>
 
 <hr>
 
-<div>
-    <h2>📚 Le mie materie</h2>
+<div style="padding: 50px;">
+    <h1>📚 Le mie materie</h1>
     <button id="btnNuovaMateria" style="margin-top:10px; ba ">➕ Nuova materia</button>
     <div id="materieList"></div>
 </div>
 
-
-
-<!-- Il tuo script.js -->
 <script src="script.js"></script>
 
 </body>

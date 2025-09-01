@@ -48,14 +48,14 @@ async function mostraMaterieConSessioni(materie) {
         let box = document.createElement("div");
         box.className = "materia-box";
         box.style.border = `2px solid ${m.colore}`;
-        box.style.padding = "10px";
+        box.style.padding = "20px";
         box.style.margin = "10px 0";
         box.style.borderRadius = "8px";
 
         let titolo = document.createElement("h4");
         titolo.textContent = m.nome;
         titolo.style.color = m.colore;
-        titolo.style.fontSize = "24px";
+        titolo.style.fontSize = "23px";
         titolo.style.margin = "0";
         box.appendChild(titolo);
 
@@ -73,6 +73,7 @@ async function mostraMaterieConSessioni(materie) {
         let lista = document.createElement("ul");
         report.filter(s => s.materia === m.nome).forEach(s => {
             let li = document.createElement("li");
+
             const dataObj = new Date(s.data);
             let formattedData = "";
             if (!isNaN(dataObj.getTime())) {
@@ -84,14 +85,57 @@ async function mostraMaterieConSessioni(materie) {
             } else {
                 formattedData = s.data;
             }
+
             li.textContent = `${formattedData} - Tempo totale: ${formatDurata(s.minutiStudio || 0)} - Note: ${s.note || "Nessuna nota"} - Pause brevi: ${s.pauseBrevi || 0}`;
+
+            // ➤ Bottone Cancella
+            let btnCancella = document.createElement("button");
+            btnCancella.textContent = "Cancella";
+            btnCancella.style.marginLeft = "10px";
+            btnCancella.style.backgroundColor = "#3498db";
+            btnCancella.style.color = "white";
+            btnCancella.style.border = "none";
+            btnCancella.style.borderRadius = "4px";
+            btnCancella.style.padding = "2px 6px";
+            btnCancella.style.cursor = "pointer";
+
+            // Funzione per cancellare la sessione/report
+            btnCancella.onclick = async () => {
+                const conferma = await Swal.fire({
+                    title: 'Vuoi davvero cancellare questa sessione?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sì, cancella',
+                    cancelButtonText: 'Annulla'
+                });
+
+                if (conferma.isConfirmed) {
+                    await fetch(`${BASE_URL}/report`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ materia: s.materia, data: s.data })
+                    });
+                    Swal.fire({
+                        title: 'Sessione cancellata!',
+                        icon: 'success',
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                    caricaMaterie();
+                    caricaCalendario();
+                }
+            };
+
+            li.appendChild(btnCancella);
             lista.appendChild(li);
         });
+
         if (lista.children.length === 0) lista.innerHTML = "<li><i>Nessuna sessione ancora</i></li>";
         box.appendChild(lista);
         container.appendChild(box);
     });
 }
+
 
 // 🔹 Start session tramite API
 async function startSessionAPI(materia, note) {
@@ -243,11 +287,7 @@ async function caricaCalendario() {
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-        eventTimeFormat: { // <-- aggiungi questa
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-        },
+        eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
         events: report.map(s => ({
             title: s.materia,
             start: parseData(s.data),
@@ -275,6 +315,29 @@ async function caricaCalendario() {
     });
 
     calendar.render();
+}
+
+// 🔹 Cancella sessione
+async function cancellaSessione(id) {
+    const conferma = await Swal.fire({
+        title: 'Vuoi davvero cancellare questa sessione?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sì, cancella',
+        cancelButtonText: 'Annulla'
+    });
+
+    if (conferma.isConfirmed) {
+        await fetch(`${BASE_URL}/sessione/${id}`, { method: "DELETE" });
+        Swal.fire({
+            title: 'Sessione cancellata!',
+            icon: 'success',
+            timer: 1000,
+            showConfirmButton: false
+        });
+        caricaMaterie();
+        caricaCalendario();
+    }
 }
 
 // 🔹 Inizializza tutto al load

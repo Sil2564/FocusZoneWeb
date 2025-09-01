@@ -73,6 +73,14 @@ public class Main {
             return gson.toJson(sessione.getReportSalvati());
         });
 
+        // 🔹 DELETE report
+        delete("/report", (req, res) -> {
+            res.type("application/json");
+            ReportDeleteRequest json = gson.fromJson(req.body(), ReportDeleteRequest.class);
+            boolean risultato = sessione.cancellaReport(json.materia, json.data);
+            return gson.toJson(risultato ? "Report cancellato" : "Report non trovato");
+        });
+
         // Stato sessione corrente
         get("/sessione/corrente", (req, res) -> {
             res.type("application/json");
@@ -81,7 +89,6 @@ public class Main {
             }
             return gson.toJson(sessione.toStatusDTO());
         });
-
 
         // ✅ API Materie
         get("/materie", (req, res) -> {

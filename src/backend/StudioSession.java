@@ -190,4 +190,17 @@ public class StudioSession {
         return dto;
     }
 
+    // 🔹 Cancella un report per materia e data (stringa formattata come in Report.data)
+    public boolean cancellaReport(String materia, String data) {
+        boolean trovato = reportSalvati.removeIf(r -> r.materia.equals(materia) && r.data.equals(data));
+        if (trovato) {
+            salvaReportSuFile();
+            System.out.println("💾 Report cancellato: " + materia + " - " + data);
+        } else {
+            System.out.println("❌ Report non trovato: " + materia + " - " + data);
+        }
+        return trovato;
+    }
+
+
 }
