@@ -243,6 +243,11 @@ async function caricaCalendario() {
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+        eventTimeFormat: { // <-- aggiungi questa
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+        },
         events: report.map(s => ({
             title: s.materia,
             start: parseData(s.data),
