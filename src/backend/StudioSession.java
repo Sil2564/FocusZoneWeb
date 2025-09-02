@@ -199,4 +199,18 @@ public class StudioSession {
         return trovato;
     }
 
+    public boolean cancellaMateria(String materia) {
+
+        boolean trovato = reportSalvati.removeIf(r -> r.materia.equals(materia));
+        if (trovato) {
+            salvaReportSuFile();
+            System.out.println("💾 Materia e tutte le sessioni cancellate: " + materia);
+        } else {
+            System.out.println("❌ Materia non trovata: " + materia);
+        }
+        return trovato;
+    }
+
+
+
 }

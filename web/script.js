@@ -52,6 +52,49 @@ async function mostraMaterieConSessioni(materie) {
         titolo.style.margin = "0";
         box.appendChild(titolo);
 
+        let btnCancellaMateria = document.createElement("button");
+        btnCancellaMateria.textContent = "Cancella materia";
+        btnCancellaMateria.style.marginLeft = "10px";
+        btnCancellaMateria.style.backgroundColor = "#e74c3c";
+        btnCancellaMateria.style.color = "white";
+        btnCancellaMateria.style.border = "none";
+        btnCancellaMateria.style.borderRadius = "4px";
+        btnCancellaMateria.style.padding = "2px 6px";
+        btnCancellaMateria.style.cursor = "pointer";
+
+        btnCancellaMateria.onclick = async () => {
+            const conferma = await Swal.fire({
+                title: `Vuoi davvero cancellare la materia "${m.nome}" e tutte le sue sessioni?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sì, cancella',
+                cancelButtonText: 'Annulla'
+            });
+            if (conferma.isConfirmed) {
+                const res = await fetch(`${BASE_URL}/materie`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nome: m.nome })
+                });
+                if (res.ok) {
+                    Swal.fire({
+                        title: 'Materia e sessioni cancellate!',
+                        icon: 'success',
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                    caricaMaterie();
+                    caricaCalendario();
+                } else {
+                    Swal.fire({
+                        title: 'Errore durante la cancellazione',
+                        icon: 'error'
+                    });
+                }
+            }
+        };
+        box.appendChild(btnCancellaMateria);
+
         let totale = document.createElement("div");
         const totaleMinuti = report
             .filter(s => s.materia === m.nome)

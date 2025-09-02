@@ -10,7 +10,7 @@ public class Main {
 
         staticFiles.externalLocation("web");
 
-        //CORS
+        // CORS
         options("/*", (request, response) -> {
             String headers = request.headers("Access-Control-Request-Headers");
             if (headers != null) response.header("Access-Control-Allow-Headers", headers);
@@ -37,12 +37,9 @@ public class Main {
 
         post("/start", (req, res) -> {
             StartRequest json = gson.fromJson(req.body(), StartRequest.class);
-
             sessione.startSession(json.materia, json.note);
-
             SimulatoreSessione simulatore = new SimulatoreSessione(sessione, json.materia, json.note);
             simulatore.start();
-
             return "Sessione avviata e simulazione partita per materia: " + json.materia;
         });
 
@@ -108,13 +105,23 @@ public class Main {
             return gson.toJson("Aggiornata");
         });
 
-        delete("/materie/:id", (req, res) -> {
+        delete("/materie", (req, res) -> {
             res.type("application/json");
-            String id = req.params(":id");
+            MateriaDeleteRequest json = gson.fromJson(req.body(), MateriaDeleteRequest.class);
+            String nome = json.nome;
+
+            sessione.cancellaMateria(nome);
+
             var materie = MateriaStore.caricaMaterie();
-            materie.removeIf(m -> m.id.equals(id));
+            materie.removeIf(m -> m.nome.equals(nome));
             MateriaStore.salvaMaterie(materie);
-            return gson.toJson("Eliminata");
+
+            return gson.toJson("Materia e sessioni cancellate");
         });
     }
+}
+
+// Nuova classe richiesta per delete /materie
+class MateriaDeleteRequest {
+    public String nome;
 }
