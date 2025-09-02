@@ -3,7 +3,7 @@ package backend;
 public class Materia {
     public String id;
     public String nome;
-    public String colore; // Es: "#FF6B6B"
+    public String colore;
 
     public Materia() {}
 

@@ -1,6 +1,6 @@
 const BASE_URL = "http://localhost:4567";
 
-// 🔹 Converte minuti totali in formato ore:minuti
+// Converte minuti totali in formato ore:minuti
 function formatDurata(minutiTotali) {
     const ore = Math.floor(minutiTotali / 60);
     const minuti = minutiTotali % 60;
@@ -9,7 +9,6 @@ function formatDurata(minutiTotali) {
 
 let pollingSessione; // memorizza setInterval per il polling
 
-// 🔹 Restituisce colore di una materia dal select
 function selezionaColoreMateria(nome) {
     const select = document.getElementById("materiaSelect");
     for (let i = 0; i < select.options.length; i++) {
@@ -18,7 +17,6 @@ function selezionaColoreMateria(nome) {
     return "#000000";
 }
 
-// 🔹 Carica materie e aggiorna UI
 async function caricaMaterie() {
     const res = await fetch(`${BASE_URL}/materie`);
     const materie = await res.json();
@@ -32,11 +30,9 @@ async function caricaMaterie() {
         opt.style.color = m.colore;
         select.appendChild(opt);
     });
-
     mostraMaterieConSessioni(materie);
 }
 
-// 🔹 Mostra contenitori con materie e sessioni
 async function mostraMaterieConSessioni(materie) {
     const res = await fetch(`${BASE_URL}/report`);
     const report = await res.json();
@@ -82,7 +78,6 @@ async function mostraMaterieConSessioni(materie) {
 
             li.textContent = `${formattedData} - Tempo totale: ${formatDurata(s.minutiStudio || 0)} - Note: ${s.note || "Nessuna nota"} - Pause brevi: ${s.pauseBrevi || 0}`;
 
-            // ➤ Bottone Cancella
             let btnCancella = document.createElement("button");
             btnCancella.textContent = "Cancella";
             btnCancella.style.marginLeft = "10px";
@@ -128,7 +123,6 @@ async function mostraMaterieConSessioni(materie) {
     });
 }
 
-// 🔹 Start session tramite API
 async function startSessionAPI(materia, note) {
     await fetch(`${BASE_URL}/start`, {
         method: "POST",
@@ -146,7 +140,7 @@ async function startSessionAPI(materia, note) {
 
     const divSessione = document.getElementById("sessioneCorrente");
     divSessione.style.display = "block";
-    document.getElementById("badgeLive").style.display = "inline-block"; // Mostra LIVE
+    document.getElementById("badgeLive").style.display = "inline-block";
     document.getElementById("statoMateria").textContent = materia;
     document.getElementById("statoMateria").style.color = selezionaColoreMateria(materia);
     document.getElementById("statoNote").textContent = note;
@@ -164,7 +158,7 @@ async function startSessionAPI(materia, note) {
             } else {
                 clearInterval(pollingSessione);
                 divSessione.style.display = "none";
-                document.getElementById("badgeLive").style.display = "none"; // Nasconde LIVE
+                document.getElementById("badgeLive").style.display = "none";
                 document.getElementById("statoPresenza").textContent = "Terminata";
 
                 Swal.fire({
@@ -182,7 +176,6 @@ async function startSessionAPI(materia, note) {
     }, 1000);
 }
 
-// 🔹 SweetAlert: Nuova sessione
 async function apriSweetAlertSessione() {
     const res = await fetch(`${BASE_URL}/materie`);
     const materie = await res.json();
@@ -212,7 +205,7 @@ async function apriSweetAlertSessione() {
     }
 }
 
-// 🔹 SweetAlert: Nuova materia
+
 async function apriSweetAlertNuovaMateria() {
     const { value: formValues } = await Swal.fire({
         title: 'Nuova materia',
@@ -247,7 +240,6 @@ async function apriSweetAlertNuovaMateria() {
     }
 }
 
-// 🔹 Termina sessione
 async function terminaSessione() {
     Swal.fire({
         title: 'Confermi di voler terminare la sessione?',
@@ -269,7 +261,7 @@ async function terminaSessione() {
     });
 }
 
-// 🔹 Parsing data string
+// Parsing data string
 function parseData(str) {
     const [dataPart, oraPart] = str.split(", ");
     const [giorno, mese, anno] = dataPart.split("/");
@@ -277,7 +269,6 @@ function parseData(str) {
     return new Date(anno, mese-1, giorno, ore, minuti);
 }
 
-// 🔹 Carica calendario
 async function caricaCalendario() {
     const res = await fetch(`${BASE_URL}/report`);
     const report = await res.json();
@@ -318,16 +309,14 @@ async function caricaCalendario() {
     calendar.render();
 }
 
-// 🔹 Inizializza tutto al load
+//Inizializza tutto al load
 document.addEventListener('DOMContentLoaded', () => {
     caricaMaterie();
     caricaCalendario();
 
-    // Bottone Nuova materia
     const btnNuovaMateria = document.getElementById("btnNuovaMateria");
     if (btnNuovaMateria) btnNuovaMateria.addEventListener("click", apriSweetAlertNuovaMateria);
 
-    // H2 Avvia sessione
     const h2Sessione = document.getElementById("avviaSessione");
     if (h2Sessione) h2Sessione.addEventListener("click", apriSweetAlertSessione);
 });

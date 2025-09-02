@@ -29,7 +29,7 @@ public class SimulatoreSessione implements Runnable {
         int tempoTrascorso = 0;
 
         while (tempoTrascorso < durataTotale && sessione.isInSession()) {
-            // STUDIA: 15–30 secondi
+
             int studio = random.nextInt(15, 30);
             for (int i = 0; i < studio && sessione.isInSession(); i++) {
                 sessione.update(true);
@@ -38,7 +38,6 @@ public class SimulatoreSessione implements Runnable {
                 if (tempoTrascorso >= durataTotale) break;
             }
 
-            // PAUSA: 3–6 secondi
             int pausa = random.nextInt(3, 6);
             for (int i = 0; i < pausa && sessione.isInSession(); i++) {
                 sessione.update(false);
@@ -57,7 +56,7 @@ public class SimulatoreSessione implements Runnable {
 
     private void dormiUnSecondo() {
         try {
-            Thread.sleep(1000); // 1 secondo = 1 minuto simulato
+            Thread.sleep(1000); // 1 sec = 1 min
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

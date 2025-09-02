@@ -32,7 +32,7 @@ public class StudioSession {
     private List<Report> reportSalvati = new ArrayList<>();
 
     public StudioSession() {
-        caricaReportDaFile(); // Carica i report al momento della creazione dell'oggetto
+        caricaReportDaFile();
     }
 
     public void startSession(String materia, String note) {
@@ -81,11 +81,9 @@ public class StudioSession {
         inSession = false;
         tutteLeSessioni.add(new ArrayList<>(storicoPresenza));
 
-        // 🔹 Crea report con data già formattata
         Report r = new Report(materia, note, data, studioSeconds, pauseBrevi);
         reportSalvati.add(r);
 
-        // 🔹 Log extra per confermare valori
         System.out.println("💾 Report creato:");
         System.out.println("Materia: " + r.materia);
         System.out.println("Note: " + r.note);
@@ -190,7 +188,6 @@ public class StudioSession {
         return dto;
     }
 
-    // 🔹 Cancella un report per materia e data (stringa formattata come in Report.data)
     public boolean cancellaReport(String materia, String data) {
         boolean trovato = reportSalvati.removeIf(r -> r.materia.equals(materia) && r.data.equals(data));
         if (trovato) {
@@ -201,6 +198,5 @@ public class StudioSession {
         }
         return trovato;
     }
-
 
 }

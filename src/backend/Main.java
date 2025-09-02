@@ -6,13 +6,11 @@ import com.google.gson.Gson;
 public class Main {
     public static void main(String[] args) {
 
-        // Porta del server
         port(4567);
 
-        // Serve i file statici (HTML, CSS, JS)
         staticFiles.externalLocation("web");
 
-        // ✅ CORS
+        //CORS
         options("/*", (request, response) -> {
             String headers = request.headers("Access-Control-Request-Headers");
             if (headers != null) response.header("Access-Control-Allow-Headers", headers);
@@ -27,53 +25,43 @@ public class Main {
             res.header("Access-Control-Allow-Headers", "*");
         });
 
-        // Home
         get("/", (req, res) -> {
             res.redirect("/index.html");
             return null;
         });
 
-        // Rotta test
         get("/ping", (req, res) -> "pong");
 
-        // Backend logica sessione
         StudioSession sessione = new StudioSession();
         Gson gson = new Gson();
 
-        // ✅ UNICA route /start che registra e simula la sessione
         post("/start", (req, res) -> {
             StartRequest json = gson.fromJson(req.body(), StartRequest.class);
 
-            // 1️⃣ Avvia sessione con materia e note
             sessione.startSession(json.materia, json.note);
 
-            // 2️⃣ Avvia simulazione automatica
             SimulatoreSessione simulatore = new SimulatoreSessione(sessione, json.materia, json.note);
             simulatore.start();
 
             return "Sessione avviata e simulazione partita per materia: " + json.materia;
         });
 
-        // Aggiorna stato sessione
         post("/update", (req, res) -> {
             UpdateRequest json = gson.fromJson(req.body(), UpdateRequest.class);
             sessione.update(json.presente);
             return "Aggiornamento ricevuto.";
         });
 
-        // Termina sessione
         post("/end", (req, res) -> {
             sessione.endSession();
             return "Sessione terminata.";
         });
 
-        // Report
         get("/report", (req, res) -> {
             res.type("application/json");
             return gson.toJson(sessione.getReportSalvati());
         });
 
-        // 🔹 DELETE report
         delete("/report", (req, res) -> {
             res.type("application/json");
             ReportDeleteRequest json = gson.fromJson(req.body(), ReportDeleteRequest.class);
@@ -81,7 +69,6 @@ public class Main {
             return gson.toJson(risultato ? "Report cancellato" : "Report non trovato");
         });
 
-        // Stato sessione corrente
         get("/sessione/corrente", (req, res) -> {
             res.type("application/json");
             if (!sessione.isInSession()) {
@@ -90,7 +77,6 @@ public class Main {
             return gson.toJson(sessione.toStatusDTO());
         });
 
-        // ✅ API Materie
         get("/materie", (req, res) -> {
             res.type("application/json");
             return gson.toJson(MateriaStore.caricaMaterie());

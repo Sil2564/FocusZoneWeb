@@ -6,79 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
-    <style>
-        header#mainHeader {
-            width: 100%;
-            height: 160px;
-            background-color: #3498db;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            font-family: 'Trebuchet MS', Helvetica, sans-serif;
-        }
-
-        body {
-            font-family: 'Trebuchet MS', Helvetica, sans-serif;
-            margin: 0px;
-            background-color: #f5f6fa;
-            color: #2c3e50;
-        }
-
-        h1, h2 { color: #2c3e50; }
-
-        button {
-            margin: 10px 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background-color: #3498db;
-            color: white;
-            transition: background 0.3s ease, transform 0.1s ease;
-        }
-        button:hover { background-color: #2980b9; }
-        button:active { transform: scale(0.97); }
-
-        select, input, textarea {
-            padding: 8px;
-            margin: 5px 0;
-            font-size: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            width: 250px;
-        }
-        textarea { width: 300px; height: 60px; resize: none; }
-
-        hr { margin: 30px 0; border: none; border-top: 2px solid #ddd; }
-
-        .materia-box {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin: 15px 0;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .materia-box:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-        }
-
-        #calendar {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        #avviaSessione:hover {
-          background-color: #8A2BE2;
-          transform: scale(1.05);
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <header id="mainHeader">
@@ -88,7 +16,6 @@
 
 <body>
 
-<!-- Avvio sessione -->
 <center>
     <h2 id="avviaSessione"
         style="cursor:pointer;
@@ -117,7 +44,6 @@
 </center>
 <hr>
 
-<!-- Sessione in corso -->
 <center>
 <div id="sessioneCorrente" style="display:none;
      background:white;

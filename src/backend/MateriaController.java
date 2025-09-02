@@ -12,7 +12,6 @@ import java.util.UUID;
 public class MateriaController implements HttpHandler {
     private static final Gson gson = new Gson();
 
-    // 🔹 Qui tieni la tua sessione globale
     private static StudioSession sessioneGlobale;
 
     public static void setSessioneGlobale(StudioSession sessione) {
@@ -28,11 +27,10 @@ public class MateriaController implements HttpHandler {
         String response = "";
 
         try {
-            // 🔹 Lista tutte le materie
+            //Lista materie
             if (method.equals("GET") && path.equals("/materie")) {
                 response = gson.toJson(materie);
 
-                // 🔹 Aggiungi materia
             } else if (method.equals("POST") && path.equals("/materie")) {
                 Materia nuova = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Materia.class);
                 nuova.id = UUID.randomUUID().toString();
@@ -40,7 +38,6 @@ public class MateriaController implements HttpHandler {
                 MateriaStore.salvaMaterie(materie);
                 response = gson.toJson(nuova);
 
-                // 🔹 Aggiorna materia
             } else if (method.equals("PUT") && path.startsWith("/materie/")) {
                 String id = path.replace("/materie/", "");
                 Materia update = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Materia.class);
@@ -54,14 +51,12 @@ public class MateriaController implements HttpHandler {
                 MateriaStore.salvaMaterie(materie);
                 response = gson.toJson("Aggiornata");
 
-                // 🔹 Elimina materia
             } else if (method.equals("DELETE") && path.startsWith("/materie/")) {
                 String id = path.replace("/materie/", "");
                 materie.removeIf(m -> m.id.equals(id));
                 MateriaStore.salvaMaterie(materie);
                 response = gson.toJson("Eliminata");
 
-                // 🔹 Nuovo endpoint: stato sessione corrente
             } else if (method.equals("GET") && path.equals("/sessione/corrente")) {
                 if (sessioneGlobale == null || !sessioneGlobale.isInSession()) {
                     response = "{\"attiva\": false}";
@@ -69,7 +64,6 @@ public class MateriaController implements HttpHandler {
                     response = gson.toJson(sessioneGlobale.toStatusDTO());
                 }
 
-                // 🔹 Percorso non trovato
             } else {
                 exchange.sendResponseHeaders(404, -1);
                 return;
