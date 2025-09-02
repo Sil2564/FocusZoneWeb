@@ -48,9 +48,6 @@ async function mostraMaterieConSessioni(materie) {
         let box = document.createElement("div");
         box.className = "materia-box";
         box.style.border = `2px solid ${m.colore}`;
-        box.style.padding = "20px";
-        box.style.margin = "10px 0";
-        box.style.borderRadius = "8px";
 
         let titolo = document.createElement("h4");
         titolo.textContent = m.nome;
@@ -75,16 +72,13 @@ async function mostraMaterieConSessioni(materie) {
             let li = document.createElement("li");
 
             const dataObj = new Date(s.data);
-            let formattedData = "";
-            if (!isNaN(dataObj.getTime())) {
-                formattedData = `${String(dataObj.getDate()).padStart(2,'0')}/` +
-                                `${String(dataObj.getMonth()+1).padStart(2,'0')}/` +
-                                `${dataObj.getFullYear()}, ` +
-                                `${String(dataObj.getHours()).padStart(2,'0')}:` +
-                                `${String(dataObj.getMinutes()).padStart(2,'0')}`;
-            } else {
-                formattedData = s.data;
-            }
+            let formattedData = !isNaN(dataObj.getTime())
+                ? `${String(dataObj.getDate()).padStart(2,'0')}/` +
+                  `${String(dataObj.getMonth()+1).padStart(2,'0')}/` +
+                  `${dataObj.getFullYear()}, ` +
+                  `${String(dataObj.getHours()).padStart(2,'0')}:` +
+                  `${String(dataObj.getMinutes()).padStart(2,'0')}`
+                : s.data;
 
             li.textContent = `${formattedData} - Tempo totale: ${formatDurata(s.minutiStudio || 0)} - Note: ${s.note || "Nessuna nota"} - Pause brevi: ${s.pauseBrevi || 0}`;
 
@@ -99,7 +93,6 @@ async function mostraMaterieConSessioni(materie) {
             btnCancella.style.padding = "2px 6px";
             btnCancella.style.cursor = "pointer";
 
-            // Funzione per cancellare la sessione/report
             btnCancella.onclick = async () => {
                 const conferma = await Swal.fire({
                     title: 'Vuoi davvero cancellare questa sessione?',
@@ -108,7 +101,6 @@ async function mostraMaterieConSessioni(materie) {
                     confirmButtonText: 'Sì, cancella',
                     cancelButtonText: 'Annulla'
                 });
-
                 if (conferma.isConfirmed) {
                     await fetch(`${BASE_URL}/report`, {
                         method: "DELETE",
@@ -136,7 +128,6 @@ async function mostraMaterieConSessioni(materie) {
     });
 }
 
-
 // 🔹 Start session tramite API
 async function startSessionAPI(materia, note) {
     await fetch(`${BASE_URL}/start`, {
@@ -155,6 +146,7 @@ async function startSessionAPI(materia, note) {
 
     const divSessione = document.getElementById("sessioneCorrente");
     divSessione.style.display = "block";
+    document.getElementById("badgeLive").style.display = "inline-block"; // Mostra LIVE
     document.getElementById("statoMateria").textContent = materia;
     document.getElementById("statoMateria").style.color = selezionaColoreMateria(materia);
     document.getElementById("statoNote").textContent = note;
@@ -172,7 +164,15 @@ async function startSessionAPI(materia, note) {
             } else {
                 clearInterval(pollingSessione);
                 divSessione.style.display = "none";
+                document.getElementById("badgeLive").style.display = "none"; // Nasconde LIVE
                 document.getElementById("statoPresenza").textContent = "Terminata";
+
+                Swal.fire({
+                    title: 'Sessione terminata!',
+                    icon: 'info',
+                    confirmButtonText: 'OK'
+                });
+
                 caricaMaterie();
                 caricaCalendario();
             }
@@ -260,6 +260,7 @@ async function terminaSessione() {
             fetch(`${BASE_URL}/end`, { method: "POST" })
                 .then(() => {
                     document.getElementById("sessioneCorrente").style.display = "none";
+                    document.getElementById("badgeLive").style.display = "none";
                     if (pollingSessione) clearInterval(pollingSessione);
                     caricaMaterie();
                     caricaCalendario();
@@ -315,29 +316,6 @@ async function caricaCalendario() {
     });
 
     calendar.render();
-}
-
-// 🔹 Cancella sessione
-async function cancellaSessione(id) {
-    const conferma = await Swal.fire({
-        title: 'Vuoi davvero cancellare questa sessione?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sì, cancella',
-        cancelButtonText: 'Annulla'
-    });
-
-    if (conferma.isConfirmed) {
-        await fetch(`${BASE_URL}/sessione/${id}`, { method: "DELETE" });
-        Swal.fire({
-            title: 'Sessione cancellata!',
-            icon: 'success',
-            timer: 1000,
-            showConfirmButton: false
-        });
-        caricaMaterie();
-        caricaCalendario();
-    }
 }
 
 // 🔹 Inizializza tutto al load
